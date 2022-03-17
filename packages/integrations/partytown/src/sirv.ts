@@ -207,7 +207,6 @@ export default function (dir, opts = {}) {
 		let extns = [''];
 		let pathname = new URL(req.url, 'https://example.dev').pathname;
 		// NEW
-		console.log(mountTo, pathname);
 		if (mountTo && pathname.startsWith(mountTo)) {
 			pathname = pathname.substring(mountTo.length);
 		}

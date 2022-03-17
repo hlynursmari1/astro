@@ -129,7 +129,6 @@ export async function render(renderers: SSRLoadedRenderer[], mod: ComponentInsta
 			// broken in the legacy build. This can be removed once the legacy build is removed.
 			if (!astroConfig.buildOptions.legacyBuild) {
 				const [resolvedUrl, resolvedPath] = await viteServer.moduleGraph.resolveUrl(s);
-				console.log('RESOLVE', s, resolvedUrl, resolvedPath);
 				if (resolvedPath.includes('node_modules/.vite')) {
 					return resolvedPath.replace(/.*?node_modules\/\.vite/, '/node_modules/.vite');
 				}
