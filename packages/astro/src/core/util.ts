@@ -25,6 +25,10 @@ export function isValidURL(url: string): boolean {
 	return false;
 }
 
+export function isObject(value: unknown): value is Record<string, any> {
+	return Object.prototype.toString.call(value) === '[object Object]';
+}
+
 /** is a specifier an npm package? */
 export function parseNpmName(spec: string): { scope?: string; name: string; subpath?: string } | undefined {
 	// not an npm package
@@ -96,6 +100,14 @@ export function resolveDependency(dep: string, astroConfig: AstroConfig) {
  */
 export function viteID(filePath: URL): string {
 	return slash(fileURLToPath(filePath));
+}
+
+export const VALID_ID_PREFIX = `/@id/`;
+
+// Strip valid id prefix. This is prepended to resolved Ids that are
+// not valid browser import specifiers by the importAnalysis plugin.
+export function unwrapId(id: string): string {
+	return id.startsWith(VALID_ID_PREFIX) ? id.slice(VALID_ID_PREFIX.length) : id;
 }
 
 /** An fs utility, similar to `rimraf` or `rm -rf` */

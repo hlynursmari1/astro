@@ -1,18 +1,13 @@
-import type { AstroComponentMetadata, EndpointHandler, Renderer, Params } from '../../@types/astro';
-import type { AstroGlobalPartial, SSRResult, SSRElement } from '../../@types/astro';
-import type { AstroRequest } from '../../core/render/request';
-
 import shorthash from 'shorthash';
+import type { AstroComponentMetadata, AstroGlobalPartial, EndpointHandler, Params, SSRElement, SSRLoadedRenderer, SSRResult } from '../../@types/astro';
+import type { AstroRequest } from '../../core/render/request';
+import { escapeHTML, HTMLString, markHTMLString } from './escape.js';
 import { extractDirectives, generateHydrateScript } from './hydration.js';
 import { serializeListValue } from './util.js';
-import { escapeHTML, HTMLString, markHTMLString } from './escape.js';
 
+export { markHTMLString, markHTMLString as unescapeHTML } from './escape.js';
 export type { Metadata } from './metadata';
 export { createMetadata } from './metadata.js';
-
-export { markHTMLString } from './escape.js';
-// TODO(deprecated): This name has been updated in Astro runtime but not yet in the Astro compiler.
-export { markHTMLString as unescapeHTML } from './escape.js';
 
 const voidElementNames = /^(area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|source|track|wbr)$/i;
 const htmlBooleanAttributes =
@@ -177,7 +172,7 @@ Did you mean to enable ${formatList(probableRendererNames.map((r) => '`' + r + '
 	}
 
 	// Call the renderers `check` hook to see if any claim this component.
-	let renderer: Renderer | undefined;
+	let renderer: SSRLoadedRenderer | undefined;
 	if (metadata.hydrate !== 'only') {
 		for (const r of renderers) {
 			if (await r.ssr.check(Component, props, children)) {
@@ -264,16 +259,6 @@ If you're still stuck, please open an issue on GitHub or join us at https://astr
 		);
 	}
 
-	// This is used to add polyfill scripts to the page, if the renderer needs them.
-	if (renderer?.polyfills?.length) {
-		for (const src of renderer.polyfills) {
-			result.scripts.add({
-				props: { type: 'module' },
-				children: `import "${await result.resolve(src)}";`,
-			});
-		}
-	}
-
 	if (!hydration) {
 		return markHTMLString(html.replace(/\<\/?astro-fragment\>/g, ''));
 	}
@@ -283,7 +268,7 @@ If you're still stuck, please open an issue on GitHub or join us at https://astr
 
 	// Rather than appending this inline in the page, puts this into the `result.scripts` set that will be appended to the head.
 	// INVESTIGATE: This will likely be a problem in streaming because the `<head>` will be gone at this point.
-	result.scripts.add(await generateHydrateScript({ renderer, result, astroId, props }, metadata as Required<AstroComponentMetadata>));
+	result.scripts.add(await generateHydrateScript({ renderer: renderer!, result, astroId, props }, metadata as Required<AstroComponentMetadata>));
 
 	// Render a template if no fragment is provided.
 	const needsAstroTemplate = children && !/<\/?astro-fragment\>/.test(html);

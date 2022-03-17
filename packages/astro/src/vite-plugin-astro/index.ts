@@ -83,20 +83,17 @@ export default function astro({ config, logging }: AstroPluginOptions): vite.Plu
 			}
 		},
 		async load(id, opts) {
-			let { filename, query } = parseAstroRequest(id);
+			const parsedId = parseAstroRequest(id);
+			const query = parsedId.query;
+			const filename = normalizeFilename(parsedId.filename);
+			const isPage = filename.startsWith(fileURLToPath(config.pages));
 			if (query.astro) {
 				if (query.type === 'style') {
-					if (filename.startsWith('/@fs')) {
-						filename = filename.slice('/@fs'.length);
-					} else if (filename.startsWith('/') && !ancestor(filename, config.projectRoot.pathname)) {
-						filename = new URL('.' + filename, config.projectRoot).pathname;
-					}
-
 					if (typeof query.index === 'undefined') {
 						throw new Error(`Requests for Astro CSS must include an index.`);
 					}
 
-					const transformResult = await cachedCompilation(config, normalizeFilename(filename), null, viteTransform, { ssr: Boolean(opts?.ssr) });
+					const transformResult = await cachedCompilation(config, filename, null, viteTransform, { ssr: Boolean(opts?.ssr) });
 
 					// Track any CSS dependencies so that HMR is triggered when they change.
 					await trackCSSDependencies.call(this, { viteDevServer, id, filename, deps: transformResult.rawCSSDeps });
@@ -144,8 +141,13 @@ export default function astro({ config, logging }: AstroPluginOptions): vite.Plu
 				});
 
 				// Signal to Vite that we accept HMR updates
-				const SUFFIX = isProduction ? '' : `\nif (import.meta.hot) import.meta.hot.accept((mod) => mod);`;
-
+				let SUFFIX = '';
+				if (isProduction) {
+					SUFFIX += `\nif (import.meta.hot) import.meta.hot.accept((mod) => mod);`;
+				}
+				if (isPage) {
+					SUFFIX += `\nimport "$scripts/page.js";`;
+				}
 				return {
 					code: `${code}${SUFFIX}`,
 					map,
