@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 
-// https://astro.build/config
 export default defineConfig({
-	// Comment out "renderers: []" to enable Astro's default component support.
-	renderers: [],
+	// Your config here.
+	// See: https://astro.build/config
 });

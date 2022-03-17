@@ -1,7 +1,10 @@
 import { defineConfig } from 'astro/config';
 
-// https://astro.build/config
+import litPlugin from '@astrojs/lit';
+import tailwindPlugin from '@astrojs/tailwind';
+import sitemapPlugin from '@astrojs/sitemap';
+import partytownPlugin from '@astrojs/partytown';
+
 export default defineConfig({
-	// Enable the lit renderer to support LitHTML components and templates.
-	renderers: ['@astrojs/renderer-lit'],
+	integrations: [litPlugin(), tailwindPlugin(), sitemapPlugin(), partytownPlugin()],
 });
