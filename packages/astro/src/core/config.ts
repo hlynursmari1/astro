@@ -129,6 +129,7 @@ export const AstroConfigSchema = z.object({
 export async function validateConfig(userConfig: any, root: string): Promise<AstroConfig> {
 	const fileProtocolRoot = pathToFileURL(root + path.sep);
 	// Manual deprecation checks
+	/* eslint-disable no-console */
 	if (userConfig.renderers) {
 		console.error('Astro "renderers" are now "integrations"!');
 		console.error('Update your configuration and install new dependencies:');
@@ -150,6 +151,8 @@ export async function validateConfig(userConfig: any, root: string): Promise<Ast
 		}
 		process.exit(1);
 	}
+	/* eslint-enable no-console */
+	
 	// We need to extend the global schema to add transforms that are relative to root.
 	// This is type checked against the global schema to make sure we still match.
 	const AstroConfigRelativeSchema = AstroConfigSchema.extend({
